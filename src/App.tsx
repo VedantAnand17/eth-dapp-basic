@@ -1,8 +1,11 @@
 // Importing necessary libraries and hooks from `@tanstack/react-query` and `wagmi`
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // React Query for managing data fetching and caching
-import { useAccount, useConnect, useConnectors, useDisconnect, WagmiProvider } from "wagmi"; // Wagmi for Ethereum wallet connection functionality
+import { useAccount, useConnect, useConnectors, useDisconnect, useReadContract, WagmiProvider } from "wagmi"; // Wagmi for Ethereum wallet connection functionality
 import "./App.css"; // Importing CSS file for styling
 import { config } from "./config"; // Importing the Ethereum configuration
+import { ABI } from "./abi";
+import { Address } from "viem";
+import { AllowUSDT } from "./AllowUSDT";
 
 // Creating a new instance of QueryClient for React Query
 const client = new QueryClient();
@@ -15,10 +18,63 @@ function App() {
       <QueryClientProvider client={client}>
         {/* Rendering the ConnectWallet component for wallet connection */}
         <ConnectWallet />
+        <TotalSupply />
+        <BalanceOf />
+        <br />
+        <br />
+        <AllowUSDT />
       </QueryClientProvider>
     </WagmiProvider>
   )
 }
+
+
+function TotalSupply() {
+  const { data, isLoading, error } = useReadContract({
+    address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    abi: ABI,
+    functionName: 'totalSupply',
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+
+  return (
+    <div>
+      Total Supply: {data?.toString()}
+    </div>
+  )
+}
+
+function BalanceOf() {
+  const { address } = useAccount()
+
+  // Check if address is available and valid
+
+
+  const { data, isLoading, error } = useReadContract({
+    address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    abi: ABI,
+    functionName: 'balanceOf',
+    args: [address?.toString() as Address],
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) {
+    return (
+      <div>
+        Please connect your wallet
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      Your USDT balance is: {data?.toString()}
+    </div>
+  )
+}
+
 
 // Component to handle Ethereum wallet connection logic
 function ConnectWallet() {
