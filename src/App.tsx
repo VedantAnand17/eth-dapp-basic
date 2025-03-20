@@ -102,7 +102,9 @@ function ConnectWallet() {
   // If the user is not connected, show available connectors (wallets to connect with)
   return connectors.map((connector) => (
     // Button for each connector to initiate the connection
-    <button onClick={() => connect({ connector: connector })}>
+    <button 
+    key={connector.uid} 
+    onClick={() => connect({ connector: connector })}>
       Connect via {connector.name} {/* Displaying the wallet name */}
     </button>
   ))
